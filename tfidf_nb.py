@@ -72,6 +72,9 @@ import subprocess
 projects = ['pytorch', 'tensorflow', 'keras', 'incubator-mxnet', 'caffe']
 
 for project in projects:
+    
+    print(f"\n=== Processing {project} ===")
+
     path = f'datasets/{project}.csv'
 
     pd_all = pd.read_csv(path)
@@ -103,7 +106,7 @@ for project in projects:
     REPEAT = 10
 
     # 3) Output CSV file name
-    out_csv_name = f'.outputs/{project}_NB.csv'
+    out_csv_name = f'.outputs/{project}_TFIDF_NB.csv'
 
     # ========== Read and clean data ==========
     data = pd.read_csv(datafile).fillna('')
@@ -192,6 +195,11 @@ for project in projects:
         auc_val = auc(fpr, tpr)
         auc_values.append(auc_val)
 
+        print(f"    Repeat {repeated_time + 1}/{REPEAT} | "
+            f"Accuracy: {acc:.4f} | Precision: {prec:.4f} | Recall: {rec:.4f} | "
+            f"F1: {f1:.4f} | AUC: {auc_val:.4f} | "
+        )
+
     # --- 4.5 Aggregate results ---
     final_accuracy  = np.mean(accuracies)
     final_precision = np.mean(precisions)
@@ -199,7 +207,7 @@ for project in projects:
     final_f1        = np.mean(f1_scores)
     final_auc       = np.mean(auc_values)
 
-    print("=== Naive Bayes + TF-IDF Results ===")
+    print("\n=== Naive Bayes + TF-IDF Results ===")
     print(f"Number of repeats:     {REPEAT}")
     print(f"Average Accuracy:      {final_accuracy:.4f}")
     print(f"Average Precision:     {final_precision:.4f}")
@@ -231,3 +239,5 @@ for project in projects:
     df_log.to_csv(out_csv_name, mode='a', header=header_needed, index=False)
 
     print(f"\nResults have been saved to: {out_csv_name}")
+
+print("\n=== All projects processed! ===")
