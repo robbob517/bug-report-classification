@@ -198,7 +198,7 @@ for project in projects:
     final_f1        = np.mean(f1_scores)
     final_auc       = np.mean(auc_values)
 
-    print("\n=== Naive Bayes + TF-IDF Results ===")
+    print("\n=== SBERT + SVM Results ===")
     print(f"Number of repeats:     {REPEAT}")
     print(f"Average Accuracy:      {final_accuracy:.4f}")
     print(f"Average Precision:     {final_precision:.4f}")
