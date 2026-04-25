@@ -20,7 +20,7 @@ import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 
-# Initialize the SBERT model once to avoid redundant loading in each repeat
+# Initialise the SBERT model once to avoid redundant loading in each repeat
 sbert_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 
@@ -147,7 +147,7 @@ for project in projects:
         X_test = sbert_model.encode(test_text.tolist(), show_progress_bar=False)
 
         # --- 4.3 Train SVM with GridSearchCV ---
-        clf = SVC(kernel='linear', probability=True)
+        clf = SVC(kernel='linear', probability=True, class_weight='balanced')
         grid = GridSearchCV(
             clf,
             params,
