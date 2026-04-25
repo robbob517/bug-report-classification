@@ -20,6 +20,10 @@ import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 
+# Initialize the SBERT model once to avoid redundant loading in each repeat
+sbert_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+
 ########## 2. Define text preprocessing methods ##########
 
 def remove_html(text):
@@ -139,9 +143,8 @@ for project in projects:
         y_test  = data['sentiment'].iloc[test_index]
 
         # --- 4.2 Generate SBERT embeddings ---
-        model = SentenceTransformer('all-MiniLM-L6-v2')
-        X_train = model.encode(train_text.tolist(), show_progress_bar=False)
-        X_test = model.encode(test_text.tolist(), show_progress_bar=False)
+        X_train = sbert_model.encode(train_text.tolist(), show_progress_bar=False)
+        X_test = sbert_model.encode(test_text.tolist(), show_progress_bar=False)
 
         # --- 4.3 Train SVM with GridSearchCV ---
         clf = SVC(kernel='linear', probability=True)
