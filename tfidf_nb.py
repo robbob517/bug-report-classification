@@ -89,6 +89,7 @@ for project in projects:
         "class": "sentiment",
         "Title+Body": "text"
     })
+    os.makedirs('.cleaned-text', exist_ok=True)
     pd_tplusb.to_csv(f'.cleaned-text/{project}.Title+Body.csv', index=False, columns=["id", "Number", "sentiment", "text"])
 
     ########## 4. Configure parameters & Start training ##########
@@ -207,6 +208,7 @@ for project in projects:
     print(f"Average AUC:           {final_auc:.4f}")
 
     # Save final results to CSV (append mode)
+    os.makedirs('.outputs', exist_ok=True)
     try:
         # Attempt to check if the file already has a header
         existing_data = pd.read_csv(out_csv_name, nrows=1)
