@@ -168,7 +168,7 @@ for project in projects:
         accuracies.append(acc)
 
         # Precision (macro)
-        prec = precision_score(y_test, y_pred, average='macro')
+        prec = precision_score(y_test, y_pred, average='macro', zero_division=0)
         precisions.append(prec)
 
         # Recall (macro)
