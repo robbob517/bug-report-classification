@@ -78,7 +78,7 @@ for project in projects:
     datafile = f'.cleaned-text/{project}.Title+Body.csv'
     out_csv = f'.outputs/{project}_SBERT_SVM.csv'
 
-    # =======3.1 Prepare cleaned data =======
+    # ========== 3.1 Prepare cleaned data ==========
     pd_all = pd.read_csv(path)
     pd_all = pd_all.sample(frac=1, random_state=999)  # Shuffle
 
@@ -97,7 +97,7 @@ for project in projects:
     os.makedirs('.cleaned-text', exist_ok=True)
     pd_tplusb.to_csv(f'.cleaned-text/{project}.Title+Body.csv', index=False, columns=["id", "Number", "sentiment", "text"])
 
-    # ======= 3.2 Read and clean data =======
+    # ========== 3.2 Read and clean data ==========
     data = pd.read_csv(datafile).fillna('')
     text_col = 'text'
 
@@ -109,3 +109,18 @@ for project in projects:
     data[text_col] = data[text_col].apply(remove_emoji)
     data[text_col] = data[text_col].apply(remove_stopwords)
     data[text_col] = data[text_col].apply(clean_str)
+
+    ########## 4. Configure parameters & Start training ##########
+
+    # ========== Hyperparameters ==========
+    # Log-spaced to mirror var_smoothing in baseline
+    param_grid = {
+        'C': [0.01, 0.1, 1, 10, 100]
+    }
+
+    REPEATS = 10
+    accuracies  = []
+    precisions  = []
+    recalls     = []
+    f1_scores   = []
+    auc_values  = []
