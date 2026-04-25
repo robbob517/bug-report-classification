@@ -114,13 +114,118 @@ for project in projects:
 
     # ========== Hyperparameters ==========
     # Log-spaced to mirror var_smoothing in baseline
-    param_grid = {
+    params = {
         'C': [0.01, 0.1, 1, 10, 100]
     }
 
-    REPEATS = 10
+    REPEAT = 10
     accuracies  = []
     precisions  = []
     recalls     = []
     f1_scores   = []
     auc_values  = []
+
+    for repeated_time in range(REPEAT):
+        # --- 4.1 Split into train/test ---
+        indices = np.arange(data.shape[0])
+        train_index, test_index = train_test_split(
+            indices, test_size=0.2, random_state=repeated_time
+        )
+
+        train_text = data[text_col].iloc[train_index]
+        test_text = data[text_col].iloc[test_index]
+
+        y_train = data['sentiment'].iloc[train_index]
+        y_test  = data['sentiment'].iloc[test_index]
+
+        # --- 4.2 Generate SBERT embeddings ---
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+        X_train = model.encode(train_text.tolist(), show_progress_bar=False)
+        X_test = model.encode(test_text.tolist(), show_progress_bar=False)
+
+        # --- 4.3 Train SVM with GridSearchCV ---
+        clf = SVC(kernel='linear', probability=True)
+        grid = GridSearchCV(
+            clf,
+            params,
+            cv=5,
+            scoring='roc_auc'
+        )
+        grid.fit(X_train, y_train)
+
+        # Retrieve the best model
+        best_clf = grid.best_estimator_
+        best_clf.fit(X_train, y_train)
+
+        # --- 4.4 Make predictions & evaluate ---
+        y_pred = best_clf.predict(X_test)
+
+        # Accuracy
+        acc = accuracy_score(y_test, y_pred)
+        accuracies.append(acc)
+
+        # Precision (macro)
+        prec = precision_score(y_test, y_pred, average='macro')
+        precisions.append(prec)
+
+        # Recall (macro)
+        rec = recall_score(y_test, y_pred, average='macro')
+        recalls.append(rec)
+
+        # F1 Score (macro)
+        f1 = f1_score(y_test, y_pred, average='macro')
+        f1_scores.append(f1)
+
+        # AUC
+        # If labels are 0/1 only, this works directly.
+        # If labels are something else, adjust pos_label accordingly.
+        fpr, tpr, _ = roc_curve(y_test, y_pred, pos_label=1)
+        auc_val = auc(fpr, tpr)
+        auc_values.append(auc_val)
+
+        print(f"    Repeat {repeated_time + 1}/{REPEAT} | "
+            f"Accuracy: {acc:.4f} | Precision: {prec:.4f} | Recall: {rec:.4f} | "
+            f"F1: {f1:.4f} | AUC: {auc_val:.4f} | "
+        )
+
+    # --- 4.5 Aggregate results ---
+    final_accuracy  = np.mean(accuracies)
+    final_precision = np.mean(precisions)
+    final_recall    = np.mean(recalls)
+    final_f1        = np.mean(f1_scores)
+    final_auc       = np.mean(auc_values)
+
+    print("\n=== Naive Bayes + TF-IDF Results ===")
+    print(f"Number of repeats:     {REPEAT}")
+    print(f"Average Accuracy:      {final_accuracy:.4f}")
+    print(f"Average Precision:     {final_precision:.4f}")
+    print(f"Average Recall:        {final_recall:.4f}")
+    print(f"Average F1 score:      {final_f1:.4f}")
+    print(f"Average AUC:           {final_auc:.4f}")
+
+    # Save final results to CSV (append mode)
+    os.makedirs('.outputs', exist_ok=True)
+    try:
+        # Attempt to check if the file already has a header
+        existing_data = pd.read_csv(out_csv, nrows=1)
+        header_needed = False
+    except:
+        header_needed = True
+
+    df_log = pd.DataFrame(
+        {
+            'repeated_times': [REPEAT],
+            'Accuracy': [final_accuracy],
+            'Precision': [final_precision],
+            'Recall': [final_recall],
+            'F1': [final_f1],
+            'AUC': [final_auc],
+            'CV_list(AUC)': [str(auc_values)]
+        }
+    )
+
+    df_log.to_csv(out_csv, mode='a', header=header_needed, index=False)
+
+    print(f"\nResults have been saved to: {out_csv}")
+
+print("\n=== All projects processed! ===")
