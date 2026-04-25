@@ -3,7 +3,6 @@
 import pandas as pd
 import numpy as np
 import re
-import math
 
 # Sentence-BERT (Embeddings)
 from sentence_transformers import SentenceTransformer
@@ -64,3 +63,49 @@ def clean_str(string):
     string = re.sub(r"\'", "", string)
     string = re.sub(r"\"", "", string)
     return string.strip().lower()
+
+########## 3. Download & read data ##########
+import os
+
+projects = ['pytorch', 'tensorflow', 'keras', 'incubator-mxnet', 'caffe']
+
+for project in projects:
+
+    print(f"\n=== Processing {project} ===")
+
+    # Paths
+    path = f'datasets/{project}.csv'
+    datafile = f'.cleaned-text/{project}.Title+Body.csv'
+    out_csv = f'.outputs/{project}_SBERT_SVM.csv'
+
+    # =======3.1 Prepare cleaned data =======
+    pd_all = pd.read_csv(path)
+    pd_all = pd_all.sample(frac=1, random_state=999)  # Shuffle
+
+    # Merge Title and Body into a single column; if Body is NaN, use Title only
+    pd_all['Title+Body'] = pd_all.apply(
+        lambda row: row['Title'] + '. ' + row['Body'] if pd.notna(row['Body']) else row['Title'],
+        axis=1
+    )
+
+    # Keep only necessary columns: id, Number, sentiment, text (merged Title+Body)
+    pd_tplusb = pd_all.rename(columns={
+        "Unnamed: 0": "id",
+        "class": "sentiment",
+        "Title+Body": "text"
+    })
+    os.makedirs('.cleaned-text', exist_ok=True)
+    pd_tplusb.to_csv(f'.cleaned-text/{project}.Title+Body.csv', index=False, columns=["id", "Number", "sentiment", "text"])
+
+    # ======= 3.2 Read and clean data =======
+    data = pd.read_csv(datafile).fillna('')
+    text_col = 'text'
+
+    # Keep a copy for referencing original data if needed
+    original_data = data.copy()
+
+    # Text cleaning
+    data[text_col] = data[text_col].apply(remove_html)
+    data[text_col] = data[text_col].apply(remove_emoji)
+    data[text_col] = data[text_col].apply(remove_stopwords)
+    data[text_col] = data[text_col].apply(clean_str)
