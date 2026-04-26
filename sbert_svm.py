@@ -23,7 +23,6 @@ from nltk.corpus import stopwords
 # Initialise the SBERT model once to avoid redundant loading in each repeat
 sbert_model = SentenceTransformer('all-MiniLM-L6-v2')
 
-
 ########## 2. Define text preprocessing methods ##########
 
 def remove_html(text):
@@ -179,16 +178,9 @@ for project in projects:
         f1 = f1_score(y_test, y_pred, average='macro')
         f1_scores.append(f1)
 
-        # AUC
-        # If labels are 0/1 only, this works directly.
-        # If labels are something else, adjust pos_label accordingly.
-        fpr, tpr, _ = roc_curve(y_test, y_pred, pos_label=1)
-        auc_val = auc(fpr, tpr)
-        auc_values.append(auc_val)
-
         print(f"    Repeat {repeated_time + 1}/{REPEAT} | "
             f"Accuracy: {acc:.4f} | Precision: {prec:.4f} | Recall: {rec:.4f} | "
-            f"F1: {f1:.4f} | AUC: {auc_val:.4f} | "
+            f"F1: {f1:.4f} |"
         )
 
     # --- 4.5 Aggregate results ---
@@ -196,7 +188,6 @@ for project in projects:
     final_precision = np.mean(precisions)
     final_recall    = np.mean(recalls)
     final_f1        = np.mean(f1_scores)
-    final_auc       = np.mean(auc_values)
 
     print("\n=== SBERT + SVM Results ===")
     print(f"Number of repeats:     {REPEAT}")
@@ -204,7 +195,6 @@ for project in projects:
     print(f"Average Precision:     {final_precision:.4f}")
     print(f"Average Recall:        {final_recall:.4f}")
     print(f"Average F1 score:      {final_f1:.4f}")
-    print(f"Average AUC:           {final_auc:.4f}")
 
     # Save final results to CSV (append mode)
     os.makedirs('.outputs', exist_ok=True)
@@ -222,12 +212,10 @@ for project in projects:
             'Precision': [final_precision],
             'Recall': [final_recall],
             'F1': [final_f1],
-            'AUC': [final_auc],
             'CV_list(Accuracy)': [str(accuracies)],
             'CV_list(Precision)': [str(precisions)],
             'CV_list(Recall)': [str(recalls)],
             'CV_list(F1)': [str(f1_scores)],
-            'CV_list(AUC)': [str(auc_values)]
         }
     )
 
