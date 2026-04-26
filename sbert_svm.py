@@ -20,8 +20,11 @@ import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 
+import torch
+
 # Initialise the SBERT model once to avoid redundant loading in each repeat
-sbert_model = SentenceTransformer('all-MiniLM-L6-v2')
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+sbert_model = SentenceTransformer('all-MiniLM-L6-v2', device=device)
 
 ########## 2. Define text preprocessing methods ##########
 
