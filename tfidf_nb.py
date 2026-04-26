@@ -10,7 +10,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # Evaluation and tuning
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
-                             f1_score, roc_curve, auc)
+                             f1_score)
 
 # Classifier
 from sklearn.naive_bayes import GaussianNB
@@ -130,7 +130,6 @@ for project in projects:
     precisions  = []
     recalls     = []
     f1_scores   = []
-    auc_values  = []
 
     for repeated_time in range(REPEAT):
         # --- 4.1 Split into train/test ---
