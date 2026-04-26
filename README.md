@@ -10,7 +10,7 @@ sentence-transformers
 ```
 
 # How to Run
-Run one at a time, waiting for output to be complete before running next line
+Run one at a time in order below, waiting for output to be complete before running next line
 ```
 python tfidf_nb.py
 ```
