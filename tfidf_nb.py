@@ -232,6 +232,10 @@ for project in projects:
             'Recall': [final_recall],
             'F1': [final_f1],
             'AUC': [final_auc],
+            'CV_list(Accuracy)': [str(accuracies)],
+            'CV_list(Precision)': [str(precisions)],
+            'CV_list(Recall)': [str(recalls)],
+            'CV_list(F1)': [str(f1_scores)],
             'CV_list(AUC)': [str(auc_values)]
         }
     )
